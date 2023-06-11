@@ -4,10 +4,53 @@ from typing import List
 import random
 import base64
 import simplejson as json
-from pymongo import TEXT
 from be.model.db_conn import DBConn
-from be.model import store
-import pymongo
+from sqlalchemy import Column, String, create_engine, Integer, Text, Date, LargeBinary
+from be.model.store import get_db_conn, get_db_base
+
+Base = get_db_base()
+
+class books(Base):
+    __tablename__ = 'book'
+
+    id = Column(Text, primary_key=True, unique=True, nullable=False)
+    title = Column(Text)
+    author = Column(Text)
+    publisher = Column(Text)
+    original_title = Column(Text)
+    translator = Column(Text)
+    pub_year = Column(Text)
+    pages = Column(Integer)
+    price = Column(Integer)
+    currency_unit = Column(Text)
+    binding = Column(Text)
+    isbn = Column(Text)
+    author_intro = Column(Text)
+    book_intro = Column(Text)
+    content = Column(Text)
+    tags = Column(Text)
+    picture = Column(LargeBinary)
+
+    def to_dict(self):
+        result = {}
+        result['id'] = self.id
+        result['title'] = self.title
+        result['author'] = self.author
+        result['publisher'] = self.publisher
+        result['original_title'] = self.original_title
+        result['translator'] = self.translator
+        result['pub_year'] = self.pub_year
+        result['pages'] = self.pages
+        result['price'] = self.price
+        result['currency_unit'] = self.currency_unit
+        result['binding'] = self.binding
+        result['isbn'] = self.isbn
+        result['author_intro'] = self.author_intro
+        result['book_intro'] = self.book_intro
+        result['content'] = self.content
+        result['tags'] = self.tags
+        result['picture'] = self.picture
+        return result
 
 class Book:
     id: str
@@ -19,6 +62,7 @@ class Book:
     pub_year: str
     pages: int
     price: int
+    currency_unit: str
     binding: str
     isbn: str
     author_intro: str
@@ -34,115 +78,37 @@ class Book:
 
 class BookDB:
     def __init__(self, large: bool = False):
-        # parent_path = os.path.dirname(os.path.dirname(__file__))
-        # self.db_s = os.path.join(parent_path, "data/book.db")
-        # self.db_l = os.path.join(parent_path, "data/book_lx.db")
-        # if large:
-        #     self.book_db = self.db_l
-        # else:
-        #     self.book_db = self.db_s
-        # store.init_database('')
-        #
-        self.bookCollection = DBConn().db['book']
-        self.bookCollection.create_index(
-            [("$**", TEXT)]
-            ,
-            weights={
-                'title': 10,
-                'author': 5,
-                'publisher': 5,
-                'original_title': 10,
-                'translator': 5,
-                'tags': 3
-            }
-        )
-        self.bookCollection.create_index([("id", 1)], unique=True)
+        self.session = get_db_conn()
 
 
     def get_book_count(self):
-        # conn = sqlite.connect(self.book_db)
-        # cursor = conn.execute(
-        #     "SELECT count(id) FROM book")
-        # row = cursor.fetchone()
-        return self.bookCollection.count_documents({})
+
+        return len(self.session.query(books).all())
 
     def get_book_info(self, start, size) -> List[Book]:
-        books = []
-        # conn = sqlite.connect(self.book_db)
-        # cursor = conn.execute(
-        #     "SELECT id, title, author, "
-        #     "publisher, original_title, "
-        #     "translator, pub_year, pages, "
-        #     "price, currency_unit, binding, "
-        #     "isbn, author_intro, book_intro, "
-        #     "content, tags, picture FROM book ORDER BY id "
-        #     "LIMIT ? OFFSET ?", (size, start))
-        # for row in cursor:
-        #     book = Book()
-        #     book.id = row[0]
-        #     book.title = row[1]
-        #     book.author = row[2]
-        #     book.publisher = row[3]
-        #     book.original_title = row[4]
-        #     book.translator = row[5]
-        #     book.pub_year = row[6]
-        #     book.pages = row[7]
-        #     book.price = row[8]
+        bookres = []
 
-        #     book.currency_unit = row[9]
-        #     book.binding = row[10]
-        #     book.isbn = row[11]
-        #     book.author_intro = row[12]
-        #     book.book_intro = row[13]
-        #     book.content = row[14]
-        #     tags = row[15]
-
-        #     picture = row[16]
-
-        result = self.bookCollection.find(
-            {}, 
-            {
-                "_id": 0,
-                "id": 1,
-                "title": 1,
-                "author": 1,
-                "publisher": 1,
-                "original_title": 1,
-                "translator": 1,
-                "pub_year": 1,
-                "pages": 1,
-                "price": 1,
-                "currency_unit": 1,
-                "binding": 1,
-                "isbn": 1,
-                "author_intro": 1,
-                "book_intro": 1,
-                "content": 1,
-                "tags": 1,
-                "picture": 1,
-            }
-        ).sort("id", pymongo.ASCENDING).skip(start).limit(size)
+        result = self.session.query(books).order_by(books.id).offset(start).limit(size).all()
         for row in result:
             book = Book()
-            book.id = row["id"]
-            book.title = row["title"]
-            book.author = row["author"]
-            book.publisher = row["publisher"]
-            book.original_title = row["original_title"]
-            book.translator = row["translator"]
-            book.pub_year = row["pub_year"]
-            book.pages = row["pages"]
-            book.price = row["price"]
+            book.id = row.id
+            book.title = row.title
+            book.author = row.author
+            book.publisher = row.publisher
+            book.original_title = row.original_title
+            book.translator = row.translator
+            book.pub_year = row.pub_year
+            book.pages = row.pages
+            book.price = row.price
 
-            book.currency_unit = row["currency_unit"]
-            book.binding = row["binding"]
-            book.isbn = row["isbn"]
-            book.author_intro = row["author_intro"]
-            book.book_intro = row["book_intro"]
-            book.content = row["content"]
-            tags = row["tags"]
-
-            picture = row["picture"]
+            book.currency_unit = row.currency_unit
+            book.binding = row.binding
+            book.isbn = row.isbn
+            book.author_intro = row.author_intro
+            book.book_intro = row.book_intro
+            book.content = row.content
+            tags = row.tags
+            picture = row.picture
 
             for tag in tags.split("\n"):
                 if tag.strip() != "":
@@ -151,48 +117,7 @@ class BookDB:
                 if picture is not None:
                     encode_str = base64.b64encode(picture).decode('utf-8')
                     book.pictures.append(encode_str)
-            books.append(book)
-            # print(tags.decode('utf-8'))
-
-            # print(book.tags, len(book.picture))
-            # print(book)
-            # print(tags)
-
-        return books
+            bookres.append(book)
 
 
-    def from_sql_to_mongo(self):
-        conn = sqlite.connect(self.book_db)
-        cursor = conn.execute(
-            "SELECT id, title, author, "
-            "publisher, original_title, "
-            "translator, pub_year, pages, "
-            "price, currency_unit, binding, "
-            "isbn, author_intro, book_intro, "
-            "content, tags, picture FROM book ORDER BY id "
-        )
-        for row in cursor:
-            book = Book()
-            book.id = row[0]
-            book.title = row[1]
-            book.author = row[2]
-            book.publisher = row[3]
-            book.original_title = row[4]
-            book.translator = row[5]
-            book.pub_year = row[6]
-            book.pages = row[7]
-            book.price = row[8]
-
-            book.currency_unit = row[9]
-            book.binding = row[10]
-            book.isbn = row[11]
-            book.author_intro = row[12]
-            book.book_intro = row[13]
-            book.content = row[14]
-            book.tags = row[15]
-            book.picture = row[16]
-            self.bookCollection.insert_one(book.__dict__)
-    
-if __name__ == "__main__":
-    bookDB = BookDB()
-    bookDB.from_sql_to_mongo()
+        return bookres

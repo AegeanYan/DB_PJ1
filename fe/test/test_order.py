@@ -75,31 +75,31 @@ class TestOrder:
         assert code == 200
         code = self.buyer.send_out_delivery(self.seller_id,self.store_id,self.order_id_received)
         assert code == 200
-        code = self.buyer.order_cancel(self.order_id_canceled)
+        code = self.buyer.cancel_order(self.order_id_canceled)
         assert code == 200
         code = self.buyer.take_delivery(self.order_id_received)
         assert code == 200
-        code, order = self.buyer.order_query()
+        code, order = self.buyer.query_order()
         assert code == 200
         print(order)
 
     def test_cancel(self):
         code = self.buyer.add_funds(100000000)
-        code = self.buyer.order_cancel(self.order_id_cancel_before_pay)
+        code = self.buyer.cancel_order(self.order_id_cancel_before_pay)
         assert code == 200
         code = self.buyer.payment(self.order_id_cancel_after_deliver)
         assert code == 200
         code = self.buyer.send_out_delivery(self.seller_id,self.store_id,self.order_id_cancel_after_deliver)
         assert code == 200
-        code = self.buyer.order_cancel(self.order_id_cancel_after_deliver)
+        code = self.buyer.cancel_order(self.order_id_cancel_after_deliver)
         assert code != 200
-        code, order = self.buyer.order_query()
+        code, order = self.buyer.query_order()
         assert code == 200
         print(order)
         
     def test_auto_cancel(self):
         time.sleep(15)
-        code, order = self.buyer.order_query()
+        code, order = self.buyer.query_order()
         assert code == 200
         print(order)
 
@@ -107,4 +107,3 @@ class TestOrder:
         time.sleep(15)
         code = self.buyer.payment(self.order_regular_inspection)
         assert code == 534
-

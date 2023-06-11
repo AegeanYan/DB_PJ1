@@ -59,19 +59,20 @@ def take_delivery():
     code, message = b.take_delivery(user_id, token, order_id)
     return jsonify({"message": message}), code
 
-@bp_buyer.route("/order_cancel", methods=["POST"])
-def order_cancel():
+@bp_buyer.route("/query_order", methods=["POST"])
+def query_order():
+    user_id = request.json.get("user_id")
+    token = request.json.get("token")
+    b = Buyer()
+    code, message, orders = b.query_order(user_id, token)
+    return jsonify({"message": message, "orders": orders}), code
+
+@bp_buyer.route("/cancel_order", methods=["POST"])
+def cancel_order():
     user_id = request.json.get("user_id")
     token = request.json.get("token")
     order_id = request.json.get("order_id")
     b = Buyer()
-    code, message = b.order_cancel(user_id, token, order_id)
+    code, message = b.cancel_order(user_id, token, order_id)
     return jsonify({"message": message}), code
 
-@bp_buyer.route("/order_query", methods=["POST"])
-def order_query():
-    user_id = request.json.get("user_id")
-    token = request.json.get("token")
-    b = Buyer()
-    code, message, orders = b.order_query(user_id, token)
-    return jsonify({"message": message, "orders": orders}), code

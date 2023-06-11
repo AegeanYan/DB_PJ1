@@ -17,7 +17,7 @@ def seller_create_store():
 
 
 @bp_seller.route("/add_book", methods=["POST"])
-def seller_add_book():
+def add_book():
     user_id: str = request.json.get("user_id")
     store_id: str = request.json.get("store_id")
     book_info: str = request.json.get("book_info")

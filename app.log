@@ -12036,3 +12036,6 @@ INFO:werkzeug:127.0.0.1 - - [22/Apr/2023 13:51:02] "POST /seller/add_book HTTP/1
 INFO:werkzeug:127.0.0.1 - - [22/Apr/2023 13:51:02] "POST /seller/add_book HTTP/1.1" 200 -
 INFO:werkzeug:127.0.0.1 - - [22/Apr/2023 13:51:03] "POST /auth/search HTTP/1.1" 200 -
 INFO:werkzeug:127.0.0.1 - - [22/Apr/2023 13:51:03] "GET /shutdown HTTP/1.1" 200 -
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
